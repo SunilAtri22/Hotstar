@@ -1,37 +1,66 @@
-import React from 'react'
-import styled from 'styled-components'
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import styled from "styled-components";
+import db from "../firebase";
+import { collection, doc, getDoc } from "firebase/firestore";
 
-function Details() {
+function Details(props) {
+  const { id } = useParams();
+  const [detailData, setDetailData] = useState({});
+
+  useEffect(() => {
+    const fetchMovieDetails = async () => {
+      try {
+        const movieDoc = doc(collection(db, "movies"), id);
+        const docSnap = await getDoc(movieDoc);
+        if (docSnap.exists()) {
+          setDetailData(docSnap.data());
+        } else {
+          console.log("no such document in firebase");
+        }
+      } catch (error) {
+        console.log("Error getting document:", error);
+      }
+    };
+
+    fetchMovieDetails();
+  }, [id]);
+
     return (
         <Container>
             <Background>
-                <img src="/images/luca-movie.jpg" />
+                <img alt={detailData.title} src={detailData.backgroundImg} />
             </Background>
             <ImageTitle>
-                <img src="/images/luca-pixar.webp" />
+            <img alt={detailData.title} src={detailData.titleImg} />
             </ImageTitle>
+            <ContentMeta>
             <Controls>
                 <PlayButton>
-                    <img src="/images/play-icon-black.png" />
+                    <img src="/images/play-icon-black.png" alt="" />
                     <span>PLAY</span>
                 </PlayButton>
                 <TrailerButon>
-                    <img src="/images/play-icon-white.png" />
+                    <img src="/images/play-icon-white.png" alt="" />
                     <span>TRAILER</span>
                 </TrailerButon>
                 <AddButton>
-                    <span>+</span>
+                    <span />
+                    <span />
                 </AddButton>
                 <GroupButton>
-                <img src="/images/group-icon.png" />
+                   <div>
+                     <img src="/images/group-icon.png" alt="" />
+                   </div>
                 </GroupButton>
             </Controls>
             <SubTitle>
-                1 hr 35 min - 2021 - Animation - U/A7+
+                {detailData.subTitle}
             </SubTitle>
             <Description>
-                The movie is a coming-of-age story about one young boy experiencing an unforgettable summer filled with gelato, pasta and endless scooter rides.
+                {detailData.description}
             </Description>
+            </ContentMeta>
         </Container>
     )
 }
@@ -39,106 +68,172 @@ function Details() {
 export default Details
 
 const Container = styled.div`
-    min-height: calc(100vh - 70px);
-    padding: 0 calc(3.5vw + 5px);
-    position: relative;
+  position: relative;
+  min-height: calc(100vh-250px);
+  overflow-x: hidden;
+  display: block;
+  top: 72px;
+  padding: 0 calc(3.5vw + 5px);
 `
 
 const Background = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    opacity: 0.8;
+  left: 0px;
+  opacity: 0.8;
+  position: fixed;
+  right: 0px;
+  top: 0px;
+  z-index: -1;
 
-    img{
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-`
+  img {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+  }
+`;
+
 
 const ImageTitle = styled.div`
-    height: 30vh;
-    width: 30vw;
+  align-items: flex-end;
+  display: flex;
+  -webkit-box-pack: start;
+  justify-content: flex-start;
+  margin: 0px auto;
+  height: 30vw;
+  min-height: 170px;
+  padding-bottom: 24px;
+  width: 100%;
+
+  img {
+    max-width: 600px;
     min-width: 200px;
-    max-width: 300px;
+    width: 35vw;
+  }
+`;
 
-    img{
-        
-        width: 70%;
-        height:100%;
-        object-fit: contain;
-    }
-
-`
+const ContentMeta = styled.div`
+  max-width: 874px;
+`;
 
 const Controls = styled.div`
-    display: flex;
-    align-items: center;
-`
+  align-items: center;
+  display: flex;
+  flex-flow: row nowrap;
+  margin: 24px 0px;
+  min-height: 56px;
+`;
 
 const PlayButton = styled.button`
-border-radius: 4px;
-font-size: 15px;
-padding: 0 15px;
-margin-right: 22px;
-display: flex;
-align-items: center;
-height: 50px;
-background: rgb(240, 240, 240);
-border: none;
-letter-spacing: 1.5px;
-cursor: pointer;
+  font-size: 15px;
+  margin: 0px 22px 0px 0px;
+  padding: 0px 24px;
+  height: 56px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1.8px;
+  text-align: center;
+  text-transform: uppercase;
+  background: rgb (249, 249, 249);
+  border: none;
+  color: rgb(0, 0, 0);
 
+  img {
+    width: 32px;
+  }
 
-&:hover{
+  &:hover {
     background: rgb(198, 198, 198);
-}
+  }
 
-`
+  @media (max-width: 768px) {
+    height: 45px;
+    padding: 0px 12px;
+    font-size: 12px;
+    margin: 0px 10px 0px 0px;
+
+    img {
+      width: 25px;
+    }
+  }
+`;
 
 const TrailerButon = styled(PlayButton)`
     background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgb(240, 240, 240);
-    color: rgb(240, 240, 240);
-    
-`
+  border: 1px solid rgb(249, 249, 249);
+  color: rgb(249, 249, 249);
+`;
+
 const AddButton = styled.button`
-    margin-right: 16px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 1px solid rgb(240, 240, 240);
-    background: rgba(0, 0, 0, 0.6);
-    cursor: pointer;
+   margin-right: 16px;
+  height: 44px;
+  width: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
 
-    span{
-        font-size: 30px;
-        color: white;
+  span {
+    background-color: rgb(249, 249, 249);
+    display: inline-block;
+
+    &:first-child {
+      height: 2px;
+      transform: translate(1px, 0px) rotate(0deg);
+      width: 16px;
     }
-`
 
-const GroupButton = styled(AddButton)`
-    background: rgba(0, 0, 0, 0.8);
+    &:nth-child(2) {
+      height: 16px;
+      transform: translateX(-8px) rotate(0deg);
+      width: 2px;
+    }
+  }
+`;
 
-`
+const GroupButton = styled.div`
+     height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background: white;
+  div {
+    height: 40px;
+    width: 40px;
+    background: rgb(0, 0, 0);
+    border-radius: 50%;
+    img {
+      width: 100%;
+    }
+  }
+`;
+
 const SubTitle = styled.div`
-    color: rgb(240, 240, 240);
-    font-size: 15px;
-    min-height: 20px;
-    margin-top: 25px;
-`
+   color: rgb(249, 249, 249);
+  font-size: 15px;
+  min-height: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+`;
+
 
 const Description = styled.div`
         line-height: 1.4;
-        font-size: 19px;
-        margin-top: 16px;
-        color: rgb(240, 240, 240);
-`
+  font-size: 20px;
+  padding: 16px 0px;
+  color: rgb(249, 249, 249);
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+`;
 
